@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models.query import QuerySet # Vem default, na criação da app
 from django.utils import timezone # Usado no campo publish do Post, para considerar o timezone atual
 from django.contrib.auth.models import User
-
+from django.urls import reverse # Para criar a URL Canonica de um post
 
 ## Gerenciadores de Modelo
 class PublishedManager(models.Manager):
@@ -33,6 +33,12 @@ class Post(models.Model):
     
     objects = models.Manager()
     published = PublishedManager()
+    
+    def get_absolute_url(self):
+        return reverse('blog:post_detail',
+                       args=[self.publish.year,
+                             self.publish.month,
+                             self.publish.day, self.slug])
     
     class Meta:
         ordering = ('-publish',)

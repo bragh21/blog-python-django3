@@ -1,27 +1,17 @@
 from django.shortcuts import render, get_object_or_404
 from .models import Post
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger # Paga implementar a paginação
+from django.views.generic import ListView
 
 # Create your views here.
-def post_list(request):
-    object_list = Post.published.all() # Retorna um QuerySet
-    paginator = Paginator(object_list, 3) # 3 postagens em cada pagina
-    page = request.GET.get('page') # Informa o número da pagina atual
-    try:
-        posts = paginator.page(page)
-        
-    except PageNotAnInteger:
-        # Se a página não for um inteiro, exibe a primeira página
-        posts = paginator.page(1)
-    except EmptyPage:
-        # Se a página estiver fora do intervalo, 
-        # exibe a última página de resultados
-        posts = paginator.page(paginator.num_pages)
-    
-    third_next_page = posts.number + 3 if posts.number + 3 < posts.paginator.num_pages else  posts.paginator.num_pages
-    return render(request,
-                  'blog/posts/list.html',
-                  {'page': page, 'posts': posts, 'pages_range': range(posts.number+1, third_next_page)})
+class PostListView(ListView):
+    queryset = Post.published.all()
+    context_object_name = 'posts' # se não especificar nada, o contexto se chamada "object_list"
+    paginate_by = 3 # Quantos posts por página
+    template_name = 'blog/posts/list.html'
+    # Por termos criado o atributo 'paginate_by', o django irá criar um paginador, e retornará 
+    # nas variavies de contexto, a variavel page_obj, contendo os dados da pagina atual
+    # gerados pelo paginador.
 
 def post_detail(request, year, month, day, post):
     post = get_object_or_404(Post, slug=post,
